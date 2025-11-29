@@ -398,4 +398,125 @@ public:
         cout<< "Total de personas: " << nodos.size() <<endl;
         return true;
     }
+void mostrarLineaSucesion(){
+        cout<< "----LINEA DE SUCESION ACTUAL----" << endl;
+        
+        vector<Persona*> sucesion;
+        Persona* reyActual= obtenerReyActual();
+        
+        Persona* inicio = reyActual ? reyActual : root;
+        
+        buscarSucesoresPrimogenitos(inicio, sucesion);
+        
+        if(sucesion.empty()){
+            cout<< "No hay sucesores disponibles." << endl;
+            return;
+        }
+        
+        if(reyActual && !reyActual->is_dead && reyActual->age < 70){
+            cout<< "1. " << reyActual->name << " " << reyActual->last_name<< " - " << reyActual->age 
+                << " años - REY ACTUAL" << endl;
+        }
+        
+        for(size_t i = 0; i < sucesion.size(); i++){
+            if (sucesion[i] != reyActual){
+                int numero = i + (reyActual && !reyActual->is_dead && reyActual->age < 70 ? 2 : 1);
+                cout<< numero << ". " << sucesion[i]->name << " " << sucesion[i]->last_name<< " - " 
+                    << sucesion[i]->age << " years old" << endl;
+            }
+        }
+    }
+    
+    void asignarReyAutomatico(){
+        cout<< "----ASIGNACION AUTOMATICA DE REY----"<< endl;
+        
+        Persona* reyActual = obtenerReyActual();
+        
+        if(reyActual){
+            cout<< "Rey actual: " << reyActual->name << " " << reyActual->last_name << endl;
+            cout<< "Edad: " << reyActual->age << " years old" << endl;
+            cout<< "Estado: " << (reyActual->is_dead ? "Muerto" : "Vivo")<< endl;
+            
+            if(!reyActual->is_dead && reyActual->age < 70){
+                cout << "El rey actual sigue siendo valido." << endl;
+                return;
+            }
+        }else{
+            cout<< "No hay rey actualmente" << endl;
+        }
+        
+        cout<< "Buscando un nuevo rey..." << endl;
+        Persona* nuevoRey = buscarSucesorDirecto(reyActual);
+        
+        if(nuevoRey){
+            if(reyActual){
+                reyActual->is_king = false;
+                reyActual->was_king = true;
+            }
+            
+            nuevoRey->is_king = true;
+            nuevoRey->was_king = true;
+            cout<< "Nuevo rey asignado: " << nuevoRey->name<< " " << nuevoRey->last_name << "!" << endl;
+            cout<<"Edad: " << nuevoRey->age <<" years old" << endl;
+            cout<<"Genero: " << (nuevoRey->gender == 'H' ? "Hombre" : "Mujer") << endl;
+        }else{
+            cout<< "No se puedo encontrar un sucesor a rey adecuado"<< endl;
+        }
+    }
+    
+    void mostrarArbolCompleto(){
+        cout<< "----ARBOL GENEALOGICO COMPLETO----" << endl;
+        mostrarNodo(root, 0);
+    }
+    
+    void mostrarEstadoActual(){
+        cout<< "-----ESTADO ACTUAL DE LA FAMILIA REAL----" << endl;
+        Persona* rey = obtenerReyActual();
+        if(rey){
+            cout<< "Rey actual: " << rey->name << " " << rey->last_name << endl;
+            cout<< "Edad: " << rey->age << " years old" << endl;
+            cout<< "Estado: " << (rey->is_dead ? "Muerto" : "Vivo") << endl;
+            cout<< "Validez: " << ((!rey->is_dead && rey->age < 70) ? "Puede ser rey" : "No puede ser rey") << endl;
+        } else{
+            cout<< "No hay un rey actualmente" << endl;
+        }
+    }
+    
+    void ejecutarTodo(const string& archivoCSV){
+        cout<<"SISTEMA DE SUCESION REAL" << endl;
+        cout<<"=========================" << endl;
+        
+        ifstream test(archivoCSV.c_str());
+        if(!test.is_open()){
+            cout<<"El archivo " << archivoCSV << " no existe. Creando archivo de ejemplo..." << endl;
+            crearCSVEjemplo();
+        }
+        test.close();
+    
+        if(!cargarDesdeCSV(archivoCSV)){
+            return;
+        }
+        
+        mostrarArbolCompleto();
+        cout << endl;
+        
+        mostrarEstadoActual();
+        cout << endl;
+        
+        mostrarLineaSucesion();
+        cout << endl;
+        
+        asignarReyAutomatico();
+        cout << endl;
+        
+        cout<< "-------------------------------------------" << endl;
+    }
+};
+
+int main(){
+    ArbolGenealogico arbol;
+    
+    arbol.ejecutarTodo("FamiliaReal.csv");
+    
+    return 0;
 }
